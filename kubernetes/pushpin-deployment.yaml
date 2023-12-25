@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert
+    kompose.version: 1.31.2 (HEAD)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: pushpin
+  name: pushpin
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: pushpin
+  strategy: {}
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert
+        kompose.version: 1.31.2 (HEAD)
+      creationTimestamp: null
+      labels:
+        io.kompose.network/recipesage-selfhost-default: "true"
+        io.kompose.service: pushpin
+    spec:
+      containers:
+        - args:
+            - sed -i "s/sig_key=changeme/sig_key=$(GRIP)_KEY/" /etc/pushpin/pushpin.conf && echo "* $(){TARGET},over_http" > /etc/pushpin/routes && pushpin --merge-output
+          command:
+            - /bin/sh
+            - -c
+          env:
+            - name: GRIP_KEY
+              value: changeme
+            - name: TARGET
+              value: api:3000
+          image: julianpoy/pushpin:2023-09-17
+          name: recipesage-pushpin
+          ports:
+            - containerPort: 7999
+              hostPort: 7999
+              protocol: TCP
+          resources: {}
+      restartPolicy: Always
+status: {}
